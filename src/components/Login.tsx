@@ -1,85 +1,42 @@
 import React, { useEffect, useState  } from "react";
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
 
-interface IState{
+type UserSubmitForm = {
 
-user: {
-
-email: string;
-
-password: string;
+  email: string;
+  password: string;
 
 };
 
 
 
-}
-
-
-
 const Login = () => {
     
-    const initialValues = {  email: "", password: "" };
-    const [state, setState] = useState<IState>({
-
-user: {
-
-email:"",
-
-password:""
-
-},
-
-});
-const [formValues, setFormValues] = useState(initialValues);
-  const [formErrors, setFormErrors] = useState({});
-  const [isSubmit, setIsSubmit] = useState(false);
-
-const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-
-    setState({
-    
-    user: {
-    
-    ...state.user,
-    
-    [event.target.name]: event.target.value,
-    
-    },
-    
-    });
-    
-    };
-
-    const handlesubmit =(event: React.ChangeEvent<HTMLInputElement>):void=>{
-event.preventDefault();
-setFormErrors(validate(formValues));
-    setIsSubmit(true);
-
-
-    }
-    useEffect(() => {
-        console.log(formErrors);
-        if (Object.keys(formErrors).length === 0 && isSubmit) {
-          console.log(formValues);
-        }
-      }, [formErrors]);
-      const validate = (values) => {
-        const errors = {};
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+    const validationSchema = Yup.object().shape({
        
-        if (!values.email) {
-          errors.email = "Email is required!";
-        } else if (!regex.test(values.email)) {
-          errors.email = "This is not a valid email format!";
-        }
-        if (!values.password) {
-          errors.password = "Password is required";
-        } else if (values.password.length < 4) {
-          errors.password = "Password must be more than 4 characters";
-        } else if (values.password.length > 10) {
-          errors.password = "Password cannot exceed more than 10 characters";
-        }
-        return errors;
+        email: Yup.string()
+          .required('Email is required')
+          .email('Email is invalid'),
+        password: Yup.string()
+          .required('Password is required')
+          .min(6, 'Password must be at least 6 characters')
+          .max(40, 'Password must not exceed 40 characters'),
+    
+      });
+    
+      const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors }
+      } = useForm<UserSubmitForm>({
+        resolver: yupResolver(validationSchema)
+      });
+    
+      const onSubmit = (data: UserSubmitForm) => {
+        console.log(JSON.stringify(data, null, 2));
       };
     
     
@@ -109,7 +66,7 @@ setFormErrors(validate(formValues));
             Glad to see you,Again!
         </p>
 
-        <form className="mt-6 ">
+        <form className="mt-6 " onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-2">
                 <label
                    
@@ -120,8 +77,10 @@ setFormErrors(validate(formValues));
                 <input
                     type="email" 
                     placeholder='Enter your email'
-                    className="block w-[360px] px-4 py-2 mt-2 bg-white border rounded-md  "
+                    {...register('email')}
+                    className="block w-[360px] px-4 py-2 mt-2 bg-white border rounded-md"
                 />
+                    <div className="invalid-feedback text-red-700">{errors.email?.message}</div>
             </div>
             <div className="mb-2">
                 <label
@@ -133,8 +92,11 @@ setFormErrors(validate(formValues));
                 <input
                     type="password"
                     placeholder='Enter your password'
-                    className="block w-[360px] px-4 py-2 mt-2 bg-white border rounded-md "
+                    {...register('password')}
+                  
+                    className="block w-[360px] px-4 py-2 mt-2 bg-white border rounded-md"
                 />
+                <div className="invalid-feedback text-red-700">{errors.password?.message}</div>
             </div>
             <a
                 href="#"
